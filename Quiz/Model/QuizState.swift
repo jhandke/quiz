@@ -9,7 +9,7 @@ import Foundation
 
 enum GameState {
     case noGame
-    case gameRunning(game: Game)
+    case gameRunning(viewModel: GameViewModel)
 }
 
 @Observable

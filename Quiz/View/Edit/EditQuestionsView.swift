@@ -10,6 +10,7 @@ import SwiftData
 
 struct EditQuestionsView: View {
     @Bindable var questionSet: QuestionSet
+    @Environment(\.modelContext) var modelContext
 
     var body: some View {
         Form {
@@ -18,12 +19,14 @@ struct EditQuestionsView: View {
             }
             Section("Fragen") {
                 ForEach($questionSet.questions) { $question in
-                    NavigationLink(destination: EditQuestionAnswersView(question: $question)) {
+                    NavigationLink(value: question) {
                         Text(question.text)
                     }
                     .swipeActions {
                         Button("Frage löschen", systemImage: "trash", role: .destructive) {
-                            questionSet.questions.removeAll { $0.id == question.id }
+                            if let index = questionSet.questions.firstIndex(of: question) {
+                                questionSet.questions.remove(at: index)
+                            }
                         }
                     }
                 }
@@ -34,27 +37,29 @@ struct EditQuestionsView: View {
         }
         .navigationTitle("Fragenkatalog bearbeiten")
         .toolbar {
-            //            ToolbarItem(placement: .bottomBar) {
             Button("Neue Frage", systemImage: "plus") {
-                let question = Question(text: "Neue Frage", category: "Empty", answers: [], correctAnswerIndex: -1)
-                questionSet.questions.append(question)
+                let question = Question(text: "Neue Frage", category: "", answers: [], correctAnswerUUID: nil)
+                modelContext.insert(question)
+                try? modelContext.save()
+                withAnimation {
+                    questionSet.questions.append(question)
+                }
             }
-            //            }
             .animation(.default, value: questionSet.questions)
         }
-        .onChange(of: questionSet) { oldValue, newValue in
-            do {
-                try questionSet.modelContext?.save()
-                print("Saved question set.")
-            } catch {
-                print(#function, error.localizedDescription)
-            }
+        .navigationDestination(for: Question.self) { question in
+            EditQuestionAnswersView(question: question)
         }
     }
 }
 
 #Preview {
-    @Previewable @State var questionSet = QuestionSet(name: "Test", questions: [])
+    @Previewable @State var questionSet = QuestionSet(
+        name: "Test",
+        questions: [],
+        finalQuestion: Question(text: "", category: "", answers: [], correctAnswerUUID: nil),
+        lastEdit: Date.distantPast
+    )
 
     NavigationStack {
         EditQuestionsView(questionSet: questionSet)

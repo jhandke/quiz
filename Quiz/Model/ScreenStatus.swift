@@ -13,5 +13,4 @@ class ScreenStatus {
     private init() { }
 
     var externalScreenConnected: Bool = false
-    var idealFontSize: CGFloat = 96
 }

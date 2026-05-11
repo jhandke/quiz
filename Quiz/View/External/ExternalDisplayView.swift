@@ -8,25 +8,15 @@
 import SwiftUI
 
 struct ExternalDisplayView: View {
-    @State var viewModel = NewExternalDisplayViewModel()
     @State var quizState = QuizState.shared
 
-    private let fontSize = ScreenStatus.shared.idealFontSize
-
     var body: some View {
-        if viewModel.gameAvailable {
-            if let currentQuestion = viewModel.currentQuestion {
-                QuestionView(
-                    selectedAnswer: .constant(viewModel.selectedAnswer),
-                    correctAnswer: .constant(viewModel.correctAnswer),
-                    question: viewModel.currentQuestion,
-                    large: true,
-                    largeFontSize: fontSize
-                )
-            } else {
-                Text("Quiz")
-                    .font(.system(size: fontSize))
-            }
+        switch quizState.game {
+        case .noGame:
+            Text("Quiz")
+                .font(.externalLargeTitle)
+        case .gameRunning(let viewModel):
+            GameView(viewModel: viewModel, large: true)
         }
     }
 }

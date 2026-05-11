@@ -8,18 +8,26 @@
 import SwiftUI
 
 struct CorrectAnswerPicker: View {
-    var answers: [Answer]
-    @Binding var correctAnswerIndex: Int
+    @Bindable var question: Question
 
     var body: some View {
-        Picker(selection: $correctAnswerIndex) {
-            ForEach(self.answers.indices, id: \.self) { index in
-                Text(answers[index].text)
-                    .tag(index)
+        Picker(selection: $question.correctAnswerUUID) {
+            ForEach(question.answers) { answer in
+                Text(answer.text)
+                    .tag(answer.uuid, includeOptional: true)
+            }
+            if question.correctAnswerUUID == nil {
+                Text("")
+                    .tag(nil as UUID?)
             }
         } label: {
             Text("Korrekte Antwort")
         }
-        .disabled(self.answers.isEmpty)
+        .disabled(question.answers.isEmpty)
     }
+}
+
+#Preview {
+    @Previewable @State var question: Question = QuestionSet.example.finalQuestion
+    CorrectAnswerPicker(question: question)
 }
