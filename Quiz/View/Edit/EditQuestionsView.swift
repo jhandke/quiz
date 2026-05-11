@@ -12,11 +12,14 @@ struct EditQuestionsView: View {
     @Bindable var questionSet: QuestionSet
     @Environment(\.modelContext) var modelContext
 
+    @Binding var selectedQuestion: Question?
+
     var body: some View {
-        Form {
+        List(selection: $selectedQuestion) {
             Section("Name") {
                 TextField("Namen eingeben", text: $questionSet.name)
             }
+            .selectionDisabled()
             Section("Fragen") {
                 ForEach($questionSet.questions) { $question in
                     NavigationLink(value: question) {
@@ -25,6 +28,11 @@ struct EditQuestionsView: View {
                     .swipeActions {
                         Button("Frage löschen", systemImage: "trash", role: .destructive) {
                             if let index = questionSet.questions.firstIndex(of: question) {
+                                if selectedQuestion != nil, selectedQuestion == question {
+                                    withAnimation {
+                                        selectedQuestion = nil
+                                    }
+                                }
                                 questionSet.questions.remove(at: index)
                             }
                         }
@@ -35,6 +43,7 @@ struct EditQuestionsView: View {
                 }
             }
         }
+        .listStyle(.insetGrouped)
         .navigationTitle("Fragenkatalog bearbeiten")
         .toolbar {
             Button("Neue Frage", systemImage: "plus") {
@@ -43,25 +52,19 @@ struct EditQuestionsView: View {
                 try? modelContext.save()
                 withAnimation {
                     questionSet.questions.append(question)
+                    selectedQuestion = question
                 }
             }
             .animation(.default, value: questionSet.questions)
-        }
-        .navigationDestination(for: Question.self) { question in
-            EditQuestionAnswersView(question: question)
         }
     }
 }
 
 #Preview {
-    @Previewable @State var questionSet = QuestionSet(
-        name: "Test",
-        questions: [],
-        finalQuestion: Question(text: "", category: "", answers: [], correctAnswerUUID: nil),
-        lastEdit: Date.distantPast
-    )
+    @Previewable @State var questionSet = QuestionSet.example
+    @Previewable @State var selectedQuestion: Question?
 
     NavigationStack {
-        EditQuestionsView(questionSet: questionSet)
+        EditQuestionsView(questionSet: questionSet, selectedQuestion: $selectedQuestion)
     }
 }

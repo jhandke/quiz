@@ -34,6 +34,7 @@ struct PrepareGameView: View {
                                 large: false)
                     .navigationBarBackButtonHidden()
                     .environmentObject(self.navigation)
+                    .toolbar(.hidden, for: .tabBar)
             }
         }
     }

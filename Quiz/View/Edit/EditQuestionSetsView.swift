@@ -15,9 +15,12 @@ struct EditQuestionSetsView: View {
     @State private var showAlert = false
     @State private var newName = ""
 
+    @State private var selectedQuestionSet: QuestionSet?
+    @State private var selectedQuestion: Question?
+
     var body: some View {
-        List {
-            ForEach(questionSets) { questionSet in
+        NavigationSplitView {
+            List(questionSets, selection: $selectedQuestionSet) { questionSet in
                 NavigationLink(value: questionSet) {
                     VStack(alignment: .leading) {
                         Text(questionSet.name)
@@ -25,25 +28,55 @@ struct EditQuestionSetsView: View {
                             .font(.caption)
                     }
                 }
-            }
-            .onDelete { indexSet in
-                indexSet.forEach { index in
-                    modelContext.delete(questionSets[index])
+                .swipeActions {
+                    Button("Fragensatz löschen", systemImage: "trash", role: .destructive) {
+                        if let index = questionSets.firstIndex(of: questionSet) {
+                            if selectedQuestionSet != nil, selectedQuestionSet == questionSets[index] {
+                                withAnimation {
+                                    selectedQuestionSet = nil
+                                    selectedQuestion = nil
+                                }
+                            }
+                            modelContext.delete(questionSets[index])
+                        }
+                    }
                 }
-                try? modelContext.save()
+            }
+            .navigationTitle("Fragenkataloge")
+            .toolbar {
+                Button("Beispielfragen hinzufügen", systemImage: "book.badge.plus") {
+                    let newQuestionSet = QuestionSet.reduced
+                    modelContext.insert(newQuestionSet)
+                    try? modelContext.save()
+                }
+                Button("Neuer Fragenkatalog", systemImage: "plus") {
+                    self.showAlert = true
+                }
+            }
+            .navigationDestination(for: QuestionSet.self) { questionSet in
+                EditQuestionsView(questionSet: questionSet, selectedQuestion: $selectedQuestion)
+                    .navigationDestination(for: Question.self) { question in
+                        EditQuestionAnswersView(question: question)
+                    }
+            }
+        } content: {
+            if let selectedQuestionSet {
+                EditQuestionsView(questionSet: selectedQuestionSet, selectedQuestion: $selectedQuestion)
+                    .navigationDestination(for: Question.self) { question in
+                        EditQuestionAnswersView(question: question)
+                    }
+            } else {
+                Text("Wähle einen Fragensatz aus")
+            }
+        } detail: {
+            if let selectedQuestion {
+                EditQuestionAnswersView(question: selectedQuestion)
+            } else {
+                Text("Wähle eine Frage aus")
             }
         }
-        .navigationTitle("Fragenkataloge")
-        .toolbar {
-            Button("Beispielfragen hinzufügen", systemImage: "book.badge.plus") {
-                let newQuestionSet = QuestionSet.reduced
-                modelContext.insert(newQuestionSet)
-                try? modelContext.save()
-            }
-            Button("Neuer Fragenkatalog", systemImage: "plus") {
-                self.showAlert = true
-            }
-        }
+        .navigationSplitViewStyle(.balanced)
+
         .alert("Neuen Fragensatz erstellen", isPresented: $showAlert) {
             TextField("Namen eingeben", text: $newName)
             Button("Hinzufügen", role: .confirm, action: {
@@ -55,22 +88,20 @@ struct EditQuestionSetsView: View {
                 self.newName = ""
             }
         }
-        .task {
-            modelContext.autosaveEnabled = true
-        }
-        .navigationDestination(for: QuestionSet.self) { questionSet in
-            EditQuestionsView(questionSet: questionSet)
-        }
     }
 
     private func addQuestionSet(name: String) {
+        let isFirstQuestionSet = questionSets.isEmpty
         let newQuestionSet = QuestionSet(
             name: name,
             questions: [],
             finalQuestion: Question(text: "", category: "", answers: [], correctAnswerUUID: nil),
             lastEdit: Date.now
         )
-        modelContext.insert(newQuestionSet)
+        withAnimation {
+            modelContext.insert(newQuestionSet)
+            self.selectedQuestionSet = newQuestionSet
+        }
         do {
             try modelContext.save()
             print(#file, #function, "Saved new question set.")
@@ -96,8 +127,8 @@ struct EditQuestionSetsView: View {
     )
     container.mainContext.insert(anotherQuestionSet)
 
-    return NavigationStack {
+    return
         EditQuestionSetsView()
             .modelContainer(container)
-    }
+
 }

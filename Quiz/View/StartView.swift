@@ -11,28 +11,34 @@ import Combine
 
 struct StartView: View {
     @StateObject var navigation = NavigationState()
+    @State private var hideTabBar = false
 
     var body: some View {
-        NavigationStack(path: $navigation.path) {
-            ScrollView {
-                VStack(spacing: 16) {
-                    StartViewCell(title: "Spielen",
-                                  description: "Wähle einen Fragensatz aus und starte die Quizrunde",
-                                  systemImage: "gamecontroller.circle",
-                                  action: { navigation.path.append(RootDestination.game) })
-                    .buttonStyle(.borderedProminent)
-                    StartViewCell(title: "Gespielte Runden",
-                                  description: "Sieh dir die Ergebnisse deiner bisherigen Spiele an",
-                                  systemImage: "list.bullet.circle",
-                                  action: { navigation.path.append(RootDestination.rounds) })
-                    StartViewCell(title: "Fragen bearbeiten",
-                                  description: "Erstelle und korrigiere Fragen und Kategorien",
-                                  systemImage: "pencil.circle",
-                                  action: { navigation.path.append(RootDestination.editQuestionSets) })
+        TabView {
+            NavigationStack(path: $navigation.path) {
+                HStack(alignment: .top) {
+                    VStack(alignment: .leading, spacing: 16) {
+                        Text("Quiz")
+                            .font(.largeTitle)
+                        StartViewCell(title: "Spiel starten",
+                                      description: "Wähle einen Fragensatz aus und starte die Quizrunde",
+                                      systemImage: "gamecontroller.circle",
+                                      action: {
+                            withAnimation {
+                                hideTabBar = true
+                            }
+                            navigation.path.append(RootDestination.game) })
+                        .buttonStyle(.borderedProminent)
+                        StartViewCell(title: "Gespielte Runden",
+                                      description: "Sieh dir die Ergebnisse deiner bisherigen Spiele an",
+                                      systemImage: "list.bullet.circle",
+                                      action: { navigation.path.append(RootDestination.rounds) })
+                        .buttonStyle(.bordered)
+                    }
+                    Spacer()
                 }
                 .padding()
-                .buttonStyle(.bordered)
-                .navigationTitle("Quiz")
+                .frame(maxHeight: .infinity, alignment: .top)
                 .navigationDestination(for: RootDestination.self) { destination in
                     switch destination {
                     case .game:
@@ -45,7 +51,27 @@ struct StartView: View {
                     }
                 }
             }
+            .tabItem { Label("Spielen", systemImage: "gamecontroller") }
+
+            EditQuestionSetsView()
+                .ignoresSafeArea(edges: .all)
+                .tabItem { Label("Fragen bearbeiten", systemImage: "pencil") }
         }
+//        NavigationStack(path: $navigation.path) {
+//            ScrollView {
+//                VStack(spacing: 16) {
+//
+//                    StartViewCell(title: "Fragen bearbeiten",
+//                                  description: "Erstelle und korrigiere Fragen und Kategorien",
+//                                  systemImage: "pencil.circle",
+//                                  action: { navigation.path.append(RootDestination.editQuestionSets) })
+//                }
+//                .padding()
+//                .buttonStyle(.bordered)
+//                .navigationTitle("Quiz")
+
+//            }
+//        }
     }
 }
 
@@ -67,8 +93,11 @@ struct StartViewCell: View {
                     Text(description)
                         .font(.caption)
                         .multilineTextAlignment(.leading)
+
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
+                Spacer()
+                Image(systemName: "chevron.right")
             }
             .frame(maxWidth: .infinity)
         })

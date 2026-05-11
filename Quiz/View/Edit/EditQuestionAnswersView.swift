@@ -22,7 +22,7 @@ struct EditQuestionAnswersView: View {
     @FocusState private var focusedCategory: Bool
 
     var body: some View {
-        Form {
+        List {
             Section("Frage") {
                 TextField("Fragentext eingeben", text: $question.text, axis: .vertical)
                     .multilineSubmit(for: $question.text, submitLabel: .done)
@@ -68,6 +68,7 @@ struct EditQuestionAnswersView: View {
                 .disabled(self.question.answers.count >= 3)
             }
         }
+        .listStyle(.insetGrouped)
 
         .scrollDismissesKeyboard(.interactively)
         .navigationTitle("Frage bearbeiten")
