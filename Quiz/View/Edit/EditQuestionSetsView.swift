@@ -20,21 +20,38 @@ struct EditQuestionSetsView: View {
 
     var body: some View {
         NavigationSplitView {
-            List(questionSets, selection: $selectedQuestionSet) { questionSet in
-                NavigationLink(value: questionSet) {
-                    VStack(alignment: .leading) {
-                        Text(questionSet.name)
-                        Text(questionSet.lastEdit, style: .date)
-                            .font(.caption)
+            Group {
+                if questionSets.isEmpty {
+                    Button(action: addExampleQuestionSet) {
+                        HStack {
+                            Image(systemName: "plus")
+                            Text("Beispielfragen hinzufügen")
+                        }
+                        .frame(maxWidth: .infinity)
                     }
-                }
-                .swipeActions {
-                    Button("Fragensatz löschen", systemImage: "trash", role: .destructive) {
-                        if let index = questionSets.firstIndex(of: questionSet) {
-                            if selectedQuestionSet != nil, selectedQuestionSet == questionSets[index] {
-                                withAnimation {
-                                    selectedQuestionSet = nil
-                                    selectedQuestion = nil
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+                    .padding()
+                } else {
+                    List(questionSets, selection: $selectedQuestionSet) { questionSet in
+
+                        NavigationLink(value: questionSet) {
+                            VStack(alignment: .leading) {
+                                Text(questionSet.name)
+                                Text(questionSet.lastEdit, style: .date)
+                                    .font(.caption)
+                            }
+                        }
+                        .swipeActions {
+                            Button("Fragensatz löschen", systemImage: "trash", role: .destructive) {
+                                if let index = questionSets.firstIndex(of: questionSet) {
+                                    if selectedQuestionSet != nil, selectedQuestionSet == questionSets[index] {
+                                        withAnimation {
+                                            selectedQuestionSet = nil
+                                            selectedQuestion = nil
+                                        }
+                                    }
+                                    modelContext.delete(questionSets[index])
                                 }
                             }
                             modelContext.delete(questionSets[index])
@@ -44,11 +61,6 @@ struct EditQuestionSetsView: View {
             }
             .navigationTitle("Fragenkataloge")
             .toolbar {
-                Button("Beispielfragen hinzufügen", systemImage: "book.badge.plus") {
-                    let newQuestionSet = QuestionSet.reduced
-                    modelContext.insert(newQuestionSet)
-                    try? modelContext.save()
-                }
                 Button("Neuer Fragenkatalog", systemImage: "plus") {
                     self.showAlert = true
                 }
