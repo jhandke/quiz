@@ -9,18 +9,20 @@ import Foundation
 import SwiftData
 
 final class GamePersistenceService {
-    // swiftlint:disable force_try
-    static let shared = try! GamePersistenceService() // TODO: do not use force try in production
-    // swiftlint:enable force_try
+    static let shared = GamePersistenceService()
 
     private var modelContext: ModelContext
     private var modelContainer: ModelContainer
 
-    init(inMemory: Bool = false) throws {
+    init(inMemory: Bool = false) {
         let config = ModelConfiguration(for: GameInstance.self, QuestionSet.self, Question.self, Answer.self, GivenAnswer.self,
                                         isStoredInMemoryOnly: inMemory)
-        let container = try ModelContainer(for: GameInstance.self, QuestionSet.self, Question.self, Answer.self, GivenAnswer.self,
-                                           configurations: config)
+        guard let container = try? ModelContainer(
+            for: GameInstance.self, QuestionSet.self, Question.self, Answer.self, GivenAnswer.self,
+            configurations: config
+        ) else {
+            fatalError("Unable to create ModelContainer.")
+        }
         self.modelContainer = container
         self.modelContext = ModelContext(self.modelContainer)
         self.modelContext.autosaveEnabled = true
