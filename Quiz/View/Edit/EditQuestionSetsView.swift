@@ -54,7 +54,6 @@ struct EditQuestionSetsView: View {
                                     modelContext.delete(questionSets[index])
                                 }
                             }
-                            modelContext.delete(questionSets[index])
                         }
                     }
                 }
@@ -103,7 +102,6 @@ struct EditQuestionSetsView: View {
     }
 
     private func addQuestionSet(name: String) {
-        let isFirstQuestionSet = questionSets.isEmpty
         let newQuestionSet = QuestionSet(
             name: name,
             questions: [],
@@ -122,6 +120,15 @@ struct EditQuestionSetsView: View {
         }
         self.newName = ""
     }
+
+    private func addExampleQuestionSet() {
+        let newQuestionSet = QuestionSet.example
+        withAnimation {
+            modelContext.insert(newQuestionSet)
+            self.selectedQuestionSet = newQuestionSet
+            try? modelContext.save()
+        }
+    }
 }
 
 #Preview {
@@ -139,8 +146,7 @@ struct EditQuestionSetsView: View {
     )
     container.mainContext.insert(anotherQuestionSet)
 
-    return
-        EditQuestionSetsView()
-            .modelContainer(container)
+    return EditQuestionSetsView()
+        .modelContainer(container)
 
 }

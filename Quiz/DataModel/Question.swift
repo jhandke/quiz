@@ -57,19 +57,6 @@ class Question: Hashable, Equatable, Identifiable, Codable {
             self.correctAnswerUUID = answers.first?.uuid ?? nil
         }
     }
-
-    func removeAnswer(_ answer: Answer) {
-        let deletedUUID = answer.uuid
-        self.answers.removeAll(where: { $0.uuid == answer.uuid })
-        guard deletedUUID != correctAnswerUUID else {
-            return
-        }
-        if answers.isEmpty {
-            correctAnswerUUID = nil
-        } else {
-            correctAnswerUUID = answers.first?.uuid
-        }
-    }
 }
 
 extension Question {

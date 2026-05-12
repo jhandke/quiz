@@ -18,8 +18,6 @@ struct EditQuestionAnswersView: View {
     @Environment(\.modelContext) var modelContext
 
     @FocusState private var focusedAnswer: FocusableAnswer?
-    @FocusState private var focusedText: Bool
-    @FocusState private var focusedCategory: Bool
 
     var body: some View {
         List {
