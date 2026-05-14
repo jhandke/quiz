@@ -121,5 +121,6 @@ struct GameView<ViewModel>: View where ViewModel: GameViewModelProtocol {
 }
 
 #Preview {
-    GameView(viewModel: MockGameViewModel(gameStatus: .showingFinalQuestion(question: QuestionSet.example.finalQuestion)), large: false)
+    GameView(viewModel: GameViewModel(questionSet: QuestionSet.example, nameTeamA: "a", nameTeamB: "b"), showAlert: false, large: false)
+//    GameView(viewModel: MockGameViewModel(gameStatus: .showingFinalQuestion(question: QuestionSet.example.finalQuestion)), large: false)
 }

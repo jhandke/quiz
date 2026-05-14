@@ -57,21 +57,6 @@ struct StartView: View {
                 .ignoresSafeArea(edges: .all)
                 .tabItem { Label("Fragen bearbeiten", systemImage: "pencil") }
         }
-//        NavigationStack(path: $navigation.path) {
-//            ScrollView {
-//                VStack(spacing: 16) {
-//
-//                    StartViewCell(title: "Fragen bearbeiten",
-//                                  description: "Erstelle und korrigiere Fragen und Kategorien",
-//                                  systemImage: "pencil.circle",
-//                                  action: { navigation.path.append(RootDestination.editQuestionSets) })
-//                }
-//                .padding()
-//                .buttonStyle(.bordered)
-//                .navigationTitle("Quiz")
-
-//            }
-//        }
     }
 }
 

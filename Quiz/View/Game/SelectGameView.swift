@@ -31,7 +31,7 @@ struct SelectGameView: View {
                     Text(questionSet.name)
                 }
             }
-            .navigationTitle("Spiel auswählen")
+            .navigationTitle("Fragensatz auswählen")
             .navigationDestination(for: QuestionSet.self) { questionSet in
                 PrepareGameView(questionSet: questionSet)
                     .environmentObject(navigation)

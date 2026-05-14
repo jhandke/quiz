@@ -17,9 +17,9 @@ struct CategoriesView: View {
             let amount = categories.count
             let rowLength = large ? 3 : 4
             let colLength = large ? 4 : 3
-            let rows = (amount / rowLength) + 1
+            let rows = (amount / colLength)
 //            let cols = (amount / colLength) + 1
-            return ForEach(0..<rows, id: \.self) { row in
+            ForEach(0..<rows, id: \.self) { row in
                 GridRow {
                     let columnEnd: Int = if amount - row * colLength > colLength { colLength } else { amount - row * colLength }
                     ForEach(0..<columnEnd, id: \.self) { column in

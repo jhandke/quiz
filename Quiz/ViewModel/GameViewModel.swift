@@ -34,7 +34,7 @@ protocol GameViewModelProtocol: ObservableObject {
     func endGame()
 }
 
-class GameViewModel: GameViewModelProtocol, ObservableObject {
+class GameViewModel: GameViewModelProtocol {
     private let gameInstance: GameInstance
 
     private var lastQuestionTimer: Timer?
