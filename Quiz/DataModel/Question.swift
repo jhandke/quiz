@@ -11,20 +11,27 @@ import SwiftUI
 
 @Model
 class Question: Hashable, Equatable, Identifiable, Codable {
+    var id: UUID
     var text: String
     var category: String
-    var answers: [Answer]
+    @Relationship(inverse: \Answer.question) var answers: [Answer]
     var correctAnswerUUID: UUID?
 
-    init(text: String, category: String, answers: [Answer], correctAnswerUUID: UUID?) {
+    init(id: UUID, text: String, category: String, answers: [Answer], correctAnswerUUID: UUID?) {
+        self.id = id
         self.text = text
         self.category = category
         self.answers = answers
         self.correctAnswerUUID = correctAnswerUUID
     }
 
+    convenience init(text: String, category: String, answers: [Answer], correctAnswerUUID: UUID?) {
+        self.init(id: UUID(), text: text, category: category, answers: answers, correctAnswerUUID: correctAnswerUUID)
+    }
+
     required init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.id = try container.decode(UUID.self, forKey: .id)
         self.text = try container.decode(String.self, forKey: .text)
         self.category = try container.decode(String.self, forKey: .category)
         self.answers = try container.decode([Answer].self, forKey: .answers)
@@ -33,6 +40,7 @@ class Question: Hashable, Equatable, Identifiable, Codable {
 
     func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(self.id, forKey: .id)
         try container.encode(self.text, forKey: .text)
         try container.encode(self.category, forKey: .category)
         try container.encode(self.answers, forKey: .answers)
@@ -50,10 +58,18 @@ class Question: Hashable, Equatable, Identifiable, Codable {
         }
     }
 
-    func removeAnswers(at offsets: IndexSet) {
-        let uuids = offsets.map({ answers[$0].uuid })
-        answers.remove(atOffsets: offsets)
-        if let correctAnswerUUID, uuids.contains(correctAnswerUUID) {
+    func fixCorrectAnswer() {
+        guard let correctAnswerUUID, !answers.contains(where: { $0.uuid == correctAnswerUUID }) else { return }
+        self.correctAnswerUUID = answers.first?.uuid
+    }
+
+    @MainActor func removeAnswers(at offsets: IndexSet) {
+        guard let index = offsets.first else { return }
+        let uuid = answers[index].uuid
+        if let answer = answers[safeIndex: index] {
+            answer.modelContext?.delete(answer)
+        }
+        if let correctAnswerUUID, correctAnswerUUID == uuid {
             self.correctAnswerUUID = answers.first?.uuid ?? nil
         }
     }
@@ -65,6 +81,7 @@ extension Question {
 
 extension Question {
     enum CodingKeys: String, CodingKey {
+        case id
         case text
         case category
         case answers

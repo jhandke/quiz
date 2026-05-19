@@ -42,6 +42,11 @@ struct EditQuestionsView: View {
                     Text("Keine Fragen vorhanden.")
                 }
             }
+            Section("Finalfrage") {
+                NavigationLink(value: questionSet.finalQuestion) {
+                    Text(questionSet.finalQuestion.text)
+                }
+            }
         }
         .listStyle(.insetGrouped)
         .navigationTitle("Fragenkatalog bearbeiten")

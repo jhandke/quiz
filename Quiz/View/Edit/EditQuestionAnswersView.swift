@@ -8,16 +8,24 @@
 import SwiftUI
 import SwiftData
 
-enum FocusableAnswer: Hashable {
-    case none
-    case answer(Answer)
-}
-
 struct EditQuestionAnswersView: View {
     @Bindable var question: Question
     @Environment(\.modelContext) var modelContext
 
-    @FocusState private var focusedAnswer: FocusableAnswer?
+    @Query var answers: [Answer]
+
+    init(question: Question) {
+        let predicate = #Predicate<Answer> { answer in
+            if let questionID = answer.question?.id {
+                return question.id == questionID
+            } else {
+                return false
+            }
+        }
+
+        self._answers = Query(filter: predicate, sort: \.createdAt)
+        self.question = question
+    }
 
     var body: some View {
         List {
@@ -30,46 +38,60 @@ struct EditQuestionAnswersView: View {
                     .multilineSubmit(for: $question.category, submitLabel: .done)
             }
             Section("Antworten") {
-                ForEach(question.answers.indices, id: \.self) { index in
-                    HStack {
-                        TextField("Antworttext eingeben", text: $question.answers[index].text)
-                            .submitLabel(.done)
-                            .focused($focusedAnswer, equals: .answer(question.answers[index]))
-                            .onSubmit {
-                                focusedAnswer = nil
-                            }
-                        Spacer()
-                        if question.correctAnswerUUID == question.answers[index].uuid {
-                            Image(systemName: "checkmark.circle")
-                                .foregroundStyle(.green)
-                        } else {
-                            Image(systemName: "x.circle")
-                                .foregroundStyle(.red)
-                                .onTapGesture {
-                                    withAnimation {
-                                        question.correctAnswerUUID = question.answers[index].uuid
-                                    }
-                                }
-                        }
-                    }
+                ForEach(answers) { answer in
+                    answerCard(for: Bindable(answer))
                 }
-                .onDelete(perform: question.removeAnswers)
-
-                Button("Neue Antwort hinzufügen") {
-                    let newAnswer = Answer(text: "Neue Antwort", uuid: UUID())
-                    modelContext.insert(newAnswer)
-                    try? modelContext.save()
-                    withAnimation {
-                        question.addAnswer(newAnswer)
-                    }
+                if answers.count < 3 {
+                    addAnswerButton
                 }
-                .disabled(self.question.answers.count >= 3)
             }
         }
         .listStyle(.insetGrouped)
-
         .scrollDismissesKeyboard(.interactively)
         .navigationTitle("Frage bearbeiten")
+    }
+
+    @ViewBuilder
+    private func answerCard(for answer: Bindable<Answer>) -> some View {
+        HStack {
+            TextField("Antworttext eingeben", text: answer.text, axis: .vertical)
+                .multilineSubmit(for: answer.text, submitLabel: .done)
+            Spacer()
+            if question.correctAnswerUUID == answer.wrappedValue.uuid {
+                Image(systemName: "checkmark.circle")
+                    .foregroundStyle(.green)
+            } else {
+                Image(systemName: "x.circle")
+                    .foregroundStyle(.red)
+                    .onTapGesture {
+                        withAnimation {
+                            question.correctAnswerUUID = answer.wrappedValue.uuid
+                        }
+                    }
+            }
+        }
+        .swipeActions {
+            Button(role: .destructive) {
+                withAnimation {
+                    modelContext.delete(answer.wrappedValue)
+                    try? modelContext.save()
+                    question.fixCorrectAnswer()
+                }
+            } label: {
+                Label("Antwort löschen", systemImage: "trash")
+            }
+        }
+    }
+
+    private var addAnswerButton: some View {
+        Button("Neue Antwort hinzufügen") {
+            let newAnswer = Answer(text: "Neue Antwort")
+            withAnimation {
+                modelContext.insert(newAnswer)
+                try? modelContext.save()
+                question.addAnswer(newAnswer)
+            }
+        }
     }
 }
 

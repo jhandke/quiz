@@ -42,9 +42,9 @@ extension QuestionSet {
         uuid = UUID()
         let finalQuestion = Question(text: "Welcher Maler ist bekannt für das Werk 'Die Sternennacht'?", category: "Kunstgeschichte",
                                      answers: [
-                                        Answer(text: "Claude Monet", uuid: UUID()),
+                                        Answer(text: "Claude Monet"),
                                         Answer(text: "Vincent van Gogh", uuid: uuid),
-                                        Answer(text: "Pablo Picasso", uuid: UUID())
+                                        Answer(text: "Pablo Picasso")
                                      ], correctAnswerUUID: uuid)
 
         return QuestionSet(
@@ -146,9 +146,9 @@ extension QuestionSet {
         uuid = UUID()
         let finalQuestion = Question(text: "Welcher Maler ist bekannt für das Werk 'Die Sternennacht'?", category: "Kunstgeschichte",
                                      answers: [
-                                        Answer(text: "Claude Monet", uuid: UUID()),
+                                        Answer(text: "Claude Monet"),
                                         Answer(text: "Vincent van Gogh", uuid: uuid),
-                                        Answer(text: "Pablo Picasso", uuid: UUID())
+                                        Answer(text: "Pablo Picasso")
                                      ], correctAnswerUUID: uuid)
 
         return QuestionSet(
