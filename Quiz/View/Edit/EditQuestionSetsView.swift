@@ -52,6 +52,7 @@ struct EditQuestionSetsView: View {
                                         }
                                     }
                                     modelContext.delete(questionSets[index])
+                                    try? modelContext.save()
                                 }
                             }
                         }
@@ -87,6 +88,9 @@ struct EditQuestionSetsView: View {
             }
         }
         .navigationSplitViewStyle(.balanced)
+        .onDisappear {
+            try? modelContext.save()
+        }
 
         .alert("Neuen Fragensatz erstellen", isPresented: $showAlert) {
             TextField("Namen eingeben", text: $newName)
@@ -132,11 +136,7 @@ struct EditQuestionSetsView: View {
 }
 
 #Preview {
-    let config = ModelConfiguration(isStoredInMemoryOnly: true)
-    let schemaV1 = Schema(versionedSchema: SchemaV1.self)
-    // swiftlint:disable force_try
-    let container = try! ModelContainer(for: schemaV1, configurations: config)
-    // swiftlint:enable force_try
+    let container = ModelContainerProvider.preview
     let questionSet = QuestionSet.example
     container.mainContext.insert(questionSet)
     let anotherQuestionSet = QuestionSet(
@@ -148,6 +148,6 @@ struct EditQuestionSetsView: View {
     container.mainContext.insert(anotherQuestionSet)
 
     return EditQuestionSetsView()
-        .modelContainer(container)
+            .modelContainer(container)
 
 }

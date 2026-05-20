@@ -130,34 +130,3 @@ extension SchemaV1 {
         }
     }
 }
-
-class GameInstancePreview {
-    @MainActor
-    static var data: ModelContainer {
-        let schemaV1 = Schema(versionedSchema: SchemaV1.self)
-        // swiftlint:disable force_try
-        let container = try! ModelContainer(for: schemaV1,
-                                            configurations: ModelConfiguration(isStoredInMemoryOnly: true))
-        // swiftlint:enable force_try
-        container.mainContext
-            .insert(
-                GameInstance(
-                    questions: QuestionSet.example.questions,
-                    questionSetName: QuestionSet.example.name,
-                    nameTeamA: "A",
-                    nameTeamB: "B",
-                    scoreTeamA: 0,
-                    scoreTeamB: 0,
-                    currentTurnRaw: "teamA",
-                    selectedQuestion: nil,
-                    givenAnswers: [],
-                    finalBetTeamA: 0,
-                    finalBetTeamB: 0,
-                    finalAnswerTeamA: nil,
-                    finalAnswerTeamB: nil,
-                    finalQuestion: QuestionSet.example.finalQuestion
-                )
-            )
-        return container
-    }
-}

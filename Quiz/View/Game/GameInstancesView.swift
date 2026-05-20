@@ -67,8 +67,28 @@ struct GameInstancesView: View {
 }
 
 #Preview {
-    NavigationStack {
+    let container = ModelContainerProvider.preview
+    container.mainContext.insert(
+        GameInstance(
+            questions: QuestionSet.example.questions,
+            questionSetName: QuestionSet.example.name,
+            nameTeamA: "A",
+            nameTeamB: "B",
+            scoreTeamA: 0,
+            scoreTeamB: 0,
+            currentTurnRaw: "teamA",
+            selectedQuestion: nil,
+            givenAnswers: [],
+            finalBetTeamA: 0,
+            finalBetTeamB: 0,
+            finalAnswerTeamA: nil,
+            finalAnswerTeamB: nil,
+            finalQuestion: QuestionSet.example.finalQuestion
+        )
+    )
+
+    return NavigationStack {
         GameInstancesView()
-            .modelContainer(GameInstancePreview.data)
+            .modelContainer(container)
     }
 }

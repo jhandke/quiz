@@ -27,13 +27,14 @@ struct EditQuestionsView: View {
                     }
                     .swipeActions {
                         Button("Frage löschen", systemImage: "trash", role: .destructive) {
-                            if let index = questionSet.questions.firstIndex(of: question) {
-                                if selectedQuestion != nil, selectedQuestion == question {
-                                    withAnimation {
-                                        selectedQuestion = nil
-                                    }
+                            if selectedQuestion != nil, selectedQuestion == question {
+                                withAnimation {
+                                    selectedQuestion = nil
                                 }
-                                questionSet.questions.remove(at: index)
+                            }
+                            withAnimation {
+                                modelContext.delete(question)
+                                try? modelContext.save()
                             }
                         }
                     }
@@ -57,10 +58,14 @@ struct EditQuestionsView: View {
                 try? modelContext.save()
                 withAnimation {
                     questionSet.questions.append(question)
+                    try? modelContext.save()
                     selectedQuestion = question
                 }
             }
             .animation(.default, value: questionSet.questions)
+        }
+        .onDisappear {
+            try? modelContext.save()
         }
     }
 }

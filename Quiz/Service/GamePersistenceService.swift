@@ -14,13 +14,8 @@ final class GamePersistenceService {
     private var modelContext: ModelContext
     private var modelContainer: ModelContainer
 
-    init(inMemory: Bool = false) {
-        let config = ModelConfiguration(for: GameInstance.self, QuestionSet.self, Question.self, Answer.self, GivenAnswer.self,
-                                        isStoredInMemoryOnly: inMemory)
-        let schemaV1 = Schema(versionedSchema: SchemaV1.self)
-        guard let container = try? ModelContainer(for: schemaV1, configurations: config) else {
-            fatalError("Unable to create ModelContainer.")
-        }
+    init() {
+        let container = ModelContainerProvider.shared
         self.modelContainer = container
         self.modelContext = ModelContext(self.modelContainer)
         self.modelContext.autosaveEnabled = true

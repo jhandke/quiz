@@ -31,11 +31,15 @@ struct EditQuestionAnswersView: View {
         List {
             Section("Frage") {
                 TextField("Fragentext eingeben", text: $question.text, axis: .vertical)
-                    .multilineSubmit(for: $question.text, submitLabel: .done)
+                    .onMultilineSubmit(in: $question.text, submitLabel: .done) {
+                        try? modelContext.save()
+                    }
             }
             Section("Kategorie") {
                 TextField("Kategorie eingeben", text: $question.category)
-                    .multilineSubmit(for: $question.category, submitLabel: .done)
+                    .onMultilineSubmit(in: $question.category, submitLabel: .done) {
+                        try? modelContext.save()
+                    }
             }
             Section("Antworten") {
                 ForEach(answers) { answer in
@@ -49,13 +53,18 @@ struct EditQuestionAnswersView: View {
         .listStyle(.insetGrouped)
         .scrollDismissesKeyboard(.interactively)
         .navigationTitle("Frage bearbeiten")
+        .onDisappear {
+            try? modelContext.save()
+        }
     }
 
     @ViewBuilder
     private func answerCard(for answer: Bindable<Answer>) -> some View {
         HStack {
             TextField("Antworttext eingeben", text: answer.text, axis: .vertical)
-                .multilineSubmit(for: answer.text, submitLabel: .done)
+                .onMultilineSubmit(in: answer.text, submitLabel: .done) {
+                    try? modelContext.save()
+                }
             Spacer()
             if question.correctAnswerUUID == answer.wrappedValue.uuid {
                 Image(systemName: "checkmark.circle")
@@ -66,6 +75,7 @@ struct EditQuestionAnswersView: View {
                     .onTapGesture {
                         withAnimation {
                             question.correctAnswerUUID = answer.wrappedValue.uuid
+                            try? modelContext.save()
                         }
                     }
             }

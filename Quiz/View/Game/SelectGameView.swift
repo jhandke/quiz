@@ -46,8 +46,7 @@ struct SelectGameView: View {
 
         init() throws {
             print(#file, #function, "init")
-            let schemaV1 = Schema(versionedSchema: SchemaV1.self)
-            let container = try ModelContainer(for: schemaV1)
+            let container = ModelContainerProvider.shared
             self.modelContext = ModelContext(container)
             self.modelContext.autosaveEnabled = false
         }
@@ -59,12 +58,26 @@ struct SelectGameView: View {
 }
 
 #Preview {
-    let config = ModelConfiguration(isStoredInMemoryOnly: true)
-    let schemaV1 = Schema(versionedSchema: SchemaV1.self)
-    // swiftlint:disable force_try
-    let container = try! ModelContainer(for: schemaV1, configurations: config)
-    // swiftlint:enable force_try
-    container.mainContext.insert(QuestionSet.example)
+    let container = ModelContainerProvider.preview
+    container.mainContext
+        .insert(
+            GameInstance(
+                questions: QuestionSet.example.questions,
+                questionSetName: QuestionSet.example.name,
+                nameTeamA: "A",
+                nameTeamB: "B",
+                scoreTeamA: 0,
+                scoreTeamB: 0,
+                currentTurnRaw: "teamA",
+                selectedQuestion: nil,
+                givenAnswers: [],
+                finalBetTeamA: 0,
+                finalBetTeamB: 0,
+                finalAnswerTeamA: nil,
+                finalAnswerTeamB: nil,
+                finalQuestion: QuestionSet.example.finalQuestion
+            )
+        )
 
     return NavigationStack {
         SelectGameView()

@@ -97,11 +97,7 @@ enum RootDestination {
 }
 
 #Preview {
-    let config = ModelConfiguration(isStoredInMemoryOnly: true)
-    let schemaV1 = Schema(versionedSchema: SchemaV1.self)
-    // swiftlint:disable force_try
-    let container = try! ModelContainer(for: schemaV1, configurations: config)
-    // swiftlint:enable force_try
+    let container = ModelContainerProvider.preview
     container.mainContext.insert(QuestionSet.example)
 
     return StartView()
