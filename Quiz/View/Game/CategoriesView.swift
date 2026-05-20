@@ -15,7 +15,7 @@ struct CategoriesView: View {
     var body: some View {
         Grid {
             let amount = categories.count
-            let rowLength = large ? 3 : 4
+//            let rowLength = large ? 3 : 4
             let colLength = large ? 4 : 3
             let rows = (amount / colLength)
 //            let cols = (amount / colLength) + 1

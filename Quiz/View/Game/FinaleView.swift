@@ -20,7 +20,15 @@ struct FinaleView: View {
     var body: some View {
         VStack(spacing: 20) {
             CategoryCell(category: category, selected: false, large: large, square: false)
-            SetBetView(scoreTeamA: scoreTeamA, scoreTeamB: scoreTeamB, betTeamA: $betTeamA, betTeamB: $betTeamB, showControls: !large)
+            SetBetView(
+                nameTeamA: nameTeamA,
+                scoreTeamA: scoreTeamA,
+                nameTeamB: nameTeamB,
+                scoreTeamB: scoreTeamB,
+                betTeamA: $betTeamA,
+                betTeamB: $betTeamB,
+                showControls: !large
+            )
         }
         .padding()
     }

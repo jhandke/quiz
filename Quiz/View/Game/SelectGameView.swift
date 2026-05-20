@@ -46,7 +46,8 @@ struct SelectGameView: View {
 
         init() throws {
             print(#file, #function, "init")
-            let container = try ModelContainer(for: QuestionSet.self, GameInstance.self)
+            let schemaV1 = Schema(versionedSchema: SchemaV1.self)
+            let container = try ModelContainer(for: schemaV1)
             self.modelContext = ModelContext(container)
             self.modelContext.autosaveEnabled = false
         }
@@ -59,8 +60,9 @@ struct SelectGameView: View {
 
 #Preview {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
+    let schemaV1 = Schema(versionedSchema: SchemaV1.self)
     // swiftlint:disable force_try
-    let container = try! ModelContainer(for: QuestionSet.self, configurations: config)
+    let container = try! ModelContainer(for: schemaV1, configurations: config)
     // swiftlint:enable force_try
     container.mainContext.insert(QuestionSet.example)
 

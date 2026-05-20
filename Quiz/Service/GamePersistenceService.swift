@@ -17,10 +17,8 @@ final class GamePersistenceService {
     init(inMemory: Bool = false) {
         let config = ModelConfiguration(for: GameInstance.self, QuestionSet.self, Question.self, Answer.self, GivenAnswer.self,
                                         isStoredInMemoryOnly: inMemory)
-        guard let container = try? ModelContainer(
-            for: GameInstance.self, QuestionSet.self, Question.self, Answer.self, GivenAnswer.self,
-            configurations: config
-        ) else {
+        let schemaV1 = Schema(versionedSchema: SchemaV1.self)
+        guard let container = try? ModelContainer(for: schemaV1, configurations: config) else {
             fatalError("Unable to create ModelContainer.")
         }
         self.modelContainer = container

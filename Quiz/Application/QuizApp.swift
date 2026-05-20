@@ -13,7 +13,7 @@ struct QuizApp: App {
     var body: some Scene {
         WindowGroup {
             StartView()
-                .modelContainer(for: [GameInstance.self, QuestionSet.self, Question.self, Answer.self, GivenAnswer.self])
+                .modelContainer(for: SchemaV1.models)
         }
     }
 }

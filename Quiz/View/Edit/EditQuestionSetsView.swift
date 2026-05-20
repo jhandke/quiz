@@ -133,8 +133,9 @@ struct EditQuestionSetsView: View {
 
 #Preview {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
+    let schemaV1 = Schema(versionedSchema: SchemaV1.self)
     // swiftlint:disable force_try
-    let container = try! ModelContainer(for: QuestionSet.self, configurations: config)
+    let container = try! ModelContainer(for: schemaV1, configurations: config)
     // swiftlint:enable force_try
     let questionSet = QuestionSet.example
     container.mainContext.insert(questionSet)
