@@ -99,10 +99,12 @@ extension SchemaV1 {
         }
 
         @MainActor func answerFinalQuestion(answerTeamA: Answer, answerTeamB: Answer) {
+            self.finalAnswerTeamA = answerTeamA
             if self.finalQuestion.correctAnswerUUID == answerTeamA.uuid {
                 self.scoreTeamA += 2 * finalBetTeamA
             }
 
+            self.finalAnswerTeamB = answerTeamB
             if self.finalQuestion.correctAnswerUUID == answerTeamB.uuid {
                 self.scoreTeamB += 2 * finalBetTeamB
             }
