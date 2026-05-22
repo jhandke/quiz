@@ -9,78 +9,38 @@ import SwiftUI
 import SwiftData
 
 struct SelectGameView: View {
-    private var questionSets: [QuestionSet] = []
-    var dataProvider: DataProvider?
-    var error: Error?
+    @Environment(\.modelContext) var modelContext
+    @Query(sort: \QuestionSet.lastEdit, order: .reverse) var questionSets: [QuestionSet]
+
     @EnvironmentObject private var navigation: NavigationState
 
-    init() {
-        do {
-            try self.dataProvider = DataProvider()
-            try self.questionSets = dataProvider?.getQuestionSets() ?? []
-        } catch {
-            print(#file, #function, error.localizedDescription)
-            self.error = error
-        }
-    }
-
     var body: some View {
-        if error == nil {
+        if questionSets.isEmpty {
+            ContentUnavailableView("Keine Fragensätze gefunden", systemImage: "exclamationmark.triangle")
+        } else {
             List(questionSets) { questionSet in
                 NavigationLink(value: questionSet) {
                     Text(questionSet.name)
                 }
+                .disabled(questionSet.questions.count != 12)
             }
             .navigationTitle("Fragensatz auswählen")
             .navigationDestination(for: QuestionSet.self) { questionSet in
                 PrepareGameView(questionSet: questionSet)
                     .environmentObject(navigation)
             }
-        } else {
-            ContentUnavailableView("Fehler beim Laden der Fragensätze", systemImage: "exclamationmark.triangle")
-        }
-    }
-
-    class DataProvider {
-        let modelContext: ModelContext
-
-        init() throws {
-            print(#file, #function, "init")
-            let container = ModelContainerProvider.shared
-            self.modelContext = ModelContext(container)
-            self.modelContext.autosaveEnabled = false
-        }
-
-        func getQuestionSets() throws -> [QuestionSet] {
-            return try modelContext.fetch(FetchDescriptor<QuestionSet>())
         }
     }
 }
 
 #Preview {
+    @Previewable @State var navigation = NavigationState()
     let container = ModelContainerProvider.preview
-    container.mainContext
-        .insert(
-            GameInstance(
-                questions: QuestionSet.example.questions,
-                questionSetName: QuestionSet.example.name,
-                nameTeamA: "A",
-                nameTeamB: "B",
-                scoreTeamA: 0,
-                scoreTeamB: 0,
-                currentTurnRaw: "teamA",
-                selectedQuestion: nil,
-                givenAnswers: [],
-                finalBetTeamA: 0,
-                finalBetTeamB: 0,
-                finalAnswerTeamA: nil,
-                finalAnswerTeamB: nil,
-                finalQuestion: QuestionSet.example.finalQuestion
-            )
-        )
+    container.mainContext.insert(QuestionSet.example)
 
     return NavigationStack {
         SelectGameView()
             .modelContainer(container)
+            .environmentObject(navigation)
     }
 }

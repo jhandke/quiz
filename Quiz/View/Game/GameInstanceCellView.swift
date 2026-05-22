@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct GameInstanceCellView: View {
     let name: String
@@ -30,22 +31,22 @@ struct GameInstanceCellView: View {
 
             ScoreView(nameTeamA: nameTeamA, scoreTeamA: scoreTeamA, nameTeamB: nameTeamB, scoreTeamB: scoreTeamB, large: false)
                 .frame(maxWidth: .infinity, alignment: .trailing)
-
         }
     }
 }
 
 #Preview {
+    let gameInstance = GameInstance.example
     List {
         GameInstanceCellView(
-            name: "Fragensatz eins",
-            lastEdit: .distantPast,
-            answeredQuestions: 8,
-            totalQuestions: 12,
-            nameTeamA: "Peter und Jan",
-            scoreTeamA: 200,
-            nameTeamB: "Olaf und Kerstin",
-            scoreTeamB: 400
+            name: gameInstance.questionSetName,
+            lastEdit: gameInstance.lastChange,
+            answeredQuestions: gameInstance.givenAnswers.count,
+            totalQuestions: gameInstance.questions.count,
+            nameTeamA: gameInstance.nameTeamA,
+            scoreTeamA: gameInstance.scoreTeamA,
+            nameTeamB: gameInstance.nameTeamB,
+            scoreTeamB: gameInstance.scoreTeamB
         )
     }
 }

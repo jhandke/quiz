@@ -9,8 +9,27 @@ import SwiftUI
 import SwiftData
 
 struct GameInstancesView: View {
-    var unfinishedGameInstances: [GameInstance] = GamePersistenceService.shared.getUnfinished() ?? []
-    var finishedGameInstances: [GameInstance] = GamePersistenceService.shared.getFinished() ?? []
+    @Environment(\.modelContext) var modelContext
+    @Query var finishedGameInstances: [GameInstance]
+    @Query var unfinishedGameInstances: [GameInstance]
+
+    init() {
+        let finishedPredicate = #Predicate<GameInstance> {
+            $0.givenAnswers.count == $0.questions.count &&
+            $0.finalAnswerTeamA != nil && $0.finalAnswerTeamB != nil
+        }
+        let notAllQuestionsAnswered = #Predicate<GameInstance> {
+            $0.givenAnswers.count < $0.questions.count
+        }
+        let finalAnswersNil = #Predicate<GameInstance> {
+            $0.finalAnswerTeamA == nil || $0.finalAnswerTeamB == nil
+        }
+        let unfinishedPredicate = #Predicate<GameInstance> {
+            notAllQuestionsAnswered.evaluate($0) && finalAnswersNil.evaluate($0)
+        }
+        self._finishedGameInstances = Query(filter: finishedPredicate)
+        self._unfinishedGameInstances = Query(filter: unfinishedPredicate)
+    }
 
     var body: some View {
         if unfinishedGameInstances.isEmpty && finishedGameInstances.isEmpty {
@@ -21,71 +40,61 @@ struct GameInstancesView: View {
                 if !unfinishedGameInstances.isEmpty {
                     Section("Offene Spiele") {
                         ForEach(unfinishedGameInstances) { gameInstance in
-                            GameInstanceCellView(
-                                name: gameInstance.questionSetName,
-                                lastEdit: gameInstance.lastChange,
-                                answeredQuestions: gameInstance.givenAnswers.count,
-                                totalQuestions: gameInstance.questions.count,
-                                nameTeamA: gameInstance.nameTeamA,
-                                scoreTeamA: gameInstance.scoreTeamA,
-                                nameTeamB: gameInstance.nameTeamB,
-                                scoreTeamB: gameInstance.scoreTeamB
-                            )
+                            NavigationLink(value: gameInstance) {
+                                GameInstanceCellView(
+                                    name: gameInstance.questionSetName,
+                                    lastEdit: gameInstance.lastChange,
+                                    answeredQuestions: gameInstance.givenAnswers.count,
+                                    totalQuestions: gameInstance.questions.count,
+                                    nameTeamA: gameInstance.nameTeamA,
+                                    scoreTeamA: gameInstance.scoreTeamA,
+                                    nameTeamB: gameInstance.nameTeamB,
+                                    scoreTeamB: gameInstance.scoreTeamB
+                                )
+                            }
                         }
                         .onDelete { offsets in
                             withAnimation {
-                                GamePersistenceService.shared.delete(unfinishedGameInstances[offsets.first!])
+                                modelContext.delete(unfinishedGameInstances[offsets.first!])
                             }
                         }
                     }
-                }
-                if !finishedGameInstances.isEmpty {
-                    Section("Abgeschlossene Spiele") {
-                        ForEach(finishedGameInstances) { gameInstance in
-                            GameInstanceCellView(
-                                name: gameInstance.questionSetName,
-                                lastEdit: gameInstance.lastChange,
-                                answeredQuestions: gameInstance.givenAnswers.count,
-                                totalQuestions: gameInstance.questions.count,
-                                nameTeamA: gameInstance.nameTeamA,
-                                scoreTeamA: gameInstance.scoreTeamA,
-                                nameTeamB: gameInstance.nameTeamB,
-                                scoreTeamB: gameInstance.scoreTeamB
-                            )
-                        }
-                        .onDelete { offsets in
-                            withAnimation {
-                                GamePersistenceService.shared.delete(finishedGameInstances[offsets.first!])
+                    if !finishedGameInstances.isEmpty {
+                        Section("Abgeschlossene Spiele") {
+                            ForEach(finishedGameInstances) { gameInstance in
+                                NavigationLink(value: gameInstance) {
+                                    GameInstanceCellView(
+                                        name: gameInstance.questionSetName,
+                                        lastEdit: gameInstance.lastChange,
+                                        answeredQuestions: gameInstance.givenAnswers.count,
+                                        totalQuestions: gameInstance.questions.count,
+                                        nameTeamA: gameInstance.nameTeamA,
+                                        scoreTeamA: gameInstance.scoreTeamA,
+                                        nameTeamB: gameInstance.nameTeamB,
+                                        scoreTeamB: gameInstance.scoreTeamB
+                                    )
+                                }
+                            }
+                            .onDelete { offsets in
+                                withAnimation {
+                                    modelContext.delete(finishedGameInstances[offsets.first!])
+                                }
                             }
                         }
                     }
                 }
             }
             .navigationTitle("Gespielte Runden")
+            .navigationDestination(for: GameInstance.self) { gameInstance in
+                GameInstanceDetailView(gameInstance: gameInstance)
+            }
         }
     }
 }
 
 #Preview {
     let container = ModelContainerProvider.preview
-    container.mainContext.insert(
-        GameInstance(
-            questions: QuestionSet.example.questions,
-            questionSetName: QuestionSet.example.name,
-            nameTeamA: "A",
-            nameTeamB: "B",
-            scoreTeamA: 0,
-            scoreTeamB: 0,
-            currentTurnRaw: "teamA",
-            selectedQuestion: nil,
-            givenAnswers: [],
-            finalBetTeamA: 0,
-            finalBetTeamB: 0,
-            finalAnswerTeamA: nil,
-            finalAnswerTeamB: nil,
-            finalQuestion: QuestionSet.example.finalQuestion
-        )
-    )
+    container.mainContext.insert(GameInstance.example)
 
     return NavigationStack {
         GameInstancesView()

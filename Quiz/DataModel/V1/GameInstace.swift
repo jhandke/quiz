@@ -132,3 +132,32 @@ extension SchemaV1 {
         }
     }
 }
+
+extension SchemaV1.GameInstance {
+    @MainActor static let example = {
+        let questions = QuestionSet.example.questions
+        let givenAnswers: [GivenAnswer] = questions.compactMap { question in
+            guard let answer = question.answers.randomElement() else { return nil }
+            return GivenAnswer(question: question, answer: answer)
+        }
+        // TODO: add computed scores
+        let gameInstance = GameInstance(
+            questions: questions,
+            questionSetName: "Beispiel",
+            nameTeamA: "A",
+            nameTeamB: "B",
+            scoreTeamA: 100,
+            scoreTeamB: 200,
+            currentTurnRaw: "teamA",
+            selectedQuestion: nil,
+            givenAnswers: givenAnswers,
+            finalBetTeamA: 20,
+            finalBetTeamB: 30,
+            finalAnswerTeamA: nil,
+            finalAnswerTeamB: nil,
+            finalQuestion: QuestionSet.example.finalQuestion,
+            lastChange: .now
+        )
+        return gameInstance
+    }()
+}
