@@ -40,8 +40,8 @@ class GameViewModel: GameViewModelProtocol {
     private var lastQuestionTimer: Timer?
     @Published var remainingSeconds: Int = 0
 
-    private func decreaseTimer() { print("decrease: \(remainingSeconds)"); withAnimation { remainingSeconds -= 1 } }
-    private func invalidateTimer() { print("invalidate"); lastQuestionTimer?.invalidate(); remainingSeconds = 0 }
+    private func decreaseTimer() { withAnimation { remainingSeconds -= 1 } }
+    private func invalidateTimer() { lastQuestionTimer?.invalidate(); withAnimation { remainingSeconds = 0 } }
 
     let nameTeamA: String
     let nameTeamB: String
@@ -181,7 +181,6 @@ class GameViewModel: GameViewModelProtocol {
 
     func endGame() {
         QuizState.shared.game = .noGame
-        print(#function, "To be imlemented...")
     }
 
     @MainActor
