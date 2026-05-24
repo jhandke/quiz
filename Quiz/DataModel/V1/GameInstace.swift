@@ -133,31 +133,48 @@ extension SchemaV1 {
     }
 }
 
+fileprivate extension CurrentTurn {
+    mutating func flip() {
+        self = switch self {
+        case .teamA: .teamB
+        case .teamB: .teamA
+        }
+    }
+}
+
 extension SchemaV1.GameInstance {
     @MainActor static let example = {
         let questions = QuestionSet.example.questions
+        var currentTurn: CurrentTurn = .teamA
+        var scoreTeamA: Int = 0
+        var scoreTeamB: Int = 0
         let givenAnswers: [GivenAnswer] = questions.compactMap { question in
             guard let answer = question.answers.randomElement() else { return nil }
+            if answer == question.correctAnswer {
+                switch currentTurn {
+                case .teamA: scoreTeamA += GameSettings.pointsForCorrectAnswer
+                case .teamB: scoreTeamB += GameSettings.pointsForCorrectAnswer
+                }
+            }
+            currentTurn.flip()
             return GivenAnswer(question: question, answer: answer)
         }
-        // TODO: add computed scores
-        let gameInstance = GameInstance(
+        return GameInstance(
             questions: questions,
             questionSetName: "Beispiel",
             nameTeamA: "A",
             nameTeamB: "B",
-            scoreTeamA: 100,
-            scoreTeamB: 200,
+            scoreTeamA: scoreTeamA,
+            scoreTeamB: scoreTeamB,
             currentTurnRaw: "teamA",
             selectedQuestion: nil,
             givenAnswers: givenAnswers,
-            finalBetTeamA: 20,
-            finalBetTeamB: 30,
+            finalBetTeamA: max(200, scoreTeamA),
+            finalBetTeamB: max(100, scoreTeamB),
             finalAnswerTeamA: nil,
             finalAnswerTeamB: nil,
             finalQuestion: QuestionSet.example.finalQuestion,
             lastChange: .now
         )
-        return gameInstance
     }()
 }
