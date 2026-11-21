@@ -57,6 +57,11 @@ struct StartView: View {
                 .ignoresSafeArea(edges: .all)
                 .tabItem { Label("Fragen bearbeiten", systemImage: "pencil") }
         }
+        .sceneAccessory {
+            ExternalNonInteractiveAccessory {
+                ExternalDisplayView()
+            }
+        }
     }
 }
 
@@ -71,7 +76,7 @@ struct StartViewCell: View {
             HStack {
                 Image(systemName: systemImage)
                     .resizable()
-                    .aspectRatio(contentMode: .fit)
+                    .scaledToFit()
                     .frame(width: 64, height: 50, alignment: .leading)
                 VStack(alignment: .leading) {
                     Text(title)
